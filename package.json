@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jasmine",
+    "test": "jasmine JASMINE_CONFIG_PATH=jasmine.json",
     "start": "webpack-dev-server --content-base dist",
     "build": "webpack && cp src/index.html dist/index.html",
     "watch": "cp src/index.html dist/index.html && webpack --watch"
@@ -25,6 +25,7 @@
     "babel-loader": "^6.3.2",
     "babel-preset-es2015": "^6.22.0",
     "jasmine": "^2.5.3",
+    "jasmine-spec-reporter": "^3.2.0",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.1"
   }
