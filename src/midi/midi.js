@@ -10,7 +10,6 @@ const getPorts = (id) => {
 const initialize = () => {
 	return new Promise ((resolve, reject) => {
 		webMidi.enable(() => {
-			console.log(webMidi.outputs)
 			ports = webMidi.outputs;
 			resolve(webMidi);
 		});	
@@ -25,5 +24,4 @@ const play = (portId, note, duration, velocity) => {
 		duration
 	});
 }
-console.log(ports);
 export default { play, initialize, getPorts }

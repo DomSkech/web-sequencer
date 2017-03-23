@@ -20,7 +20,6 @@ export default () => {
 			key: 55
 		}
 	} else {
-		console.log('Please chose from the dropdowns')
 		return false;
 	}
 }	

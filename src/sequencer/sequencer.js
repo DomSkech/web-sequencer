@@ -17,9 +17,6 @@ const getNote = (state) => {
 }
 
 const playNote = (state) => {
-
-console.log(state)
-
 	const port = state.port;
 	const noteDynamic = {
 		duration: getRndInRange(state.behaviour.noteLengthRange),

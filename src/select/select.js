@@ -12,11 +12,10 @@ const SelectFromArray = (props) => {
 	const defaultOption = defaults[props.id];
 
 	return (
-	 <select id={props.id} value={defaultOption} readOnly>
+	 <select id={props.id} defaultValue={defaultOption}>
 	 	<option value=''>{props.prompt}</option>
 	 	{
 			[...props.items].map((item, i) => {
-				console.log(defaultOption === item[props.valProp])
 				return <Option 
 					val={item[props.valProp]} 
 					key={i} 
@@ -30,9 +29,9 @@ const SelectFromArray = (props) => {
 
 const SelectFromObject = (props) => {
 	const defaultOption = defaults[props.id];
-console.log(defaultOption,props.id)
+
 	return (
-	 <select id={props.id} value={defaultOption} readOnly>
+	 <select id={props.id} defaultValue={defaultOption}>
 	 	<option value=''>{props.prompt}</option>
 	 	{
 			Object.keys(props.items).map( key => {

@@ -5,11 +5,13 @@ import getState from '../_state/state'
 
 const play = () => {
 	const state = getState();
-	state && sequencer.startSequence(state);
+
+	state && stop() && sequencer.startSequence(state);
 }
 
 const stop = () => {
 	sequencer.stopSequence();
+	return true;
 }
 
 const Button = (props) => (
