@@ -1,4 +1,5 @@
 import midi from "../midi/midi"
+import getState from '../_state/state'
 
 const transport = {
 	timing: 0,
@@ -16,16 +17,17 @@ const getNote = (state) => {
 	return state.scale[noteIdx] + state.key;
 }
 
-const playNote = (state) => {
+const playNote = () => {
+	const state = getState();
 	const port = state.port;
 	const noteDynamic = {
-		duration: getRndInRange(state.behaviour.noteLengthRange),
+		duration: getRndInRange(state.durationRange),
 		velocity: getRndInRange(state.behaviour.velocityRange),
 		release:1
 	}
 
 	port.playNote(
-		getNote(state), 
+		getNote(state),
 		1, 
 		noteDynamic
 	);
@@ -43,17 +45,15 @@ const getRndInRange = (range) => {
 	return Number(rndNum.toFixed(1));
 }
 
-const startSequence = (state) => {
-	if(state.transport){ return false }
-
+const startSequence = () => {
+	const state = getState();
 	const bpm = state.behaviour.bpm;
 	const ticks = state.behaviour.ticks;
 	const bpb = state.behaviour.bpb;
 
 	transport.timing = getTiming(bpm, bpb, ticks);
-
 	transport.timer = setInterval(() => {
-		playNote(state);
+		playNote();
 	}, transport.timing);
 
 	return true;

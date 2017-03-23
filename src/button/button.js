@@ -1,12 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import sequencer from '../sequencer/sequencer'
-import getState from '../_state/state'
 
 const play = () => {
-	const state = getState();
-
-	state && stop() && sequencer.startSequence(state);
+	stop() && sequencer.startSequence();
 }
 
 const stop = () => {
@@ -14,11 +11,15 @@ const stop = () => {
 	return true;
 }
 
-const Button = (props) => (
-	<div>
-		<button id="playButton" onClick={play}>Play sequence</button>
-		<button id="stopButton" onClick={stop}>Stop sequence</button>
-	</div>
+const PlayButton = (props) => (
+		<button className={props.className} id="playButton" onClick={play}>Play sequence</button>
 );
 
-export default Button;
+const StopButton = (props) => (
+		<button className={props.className} id="stopButton" onClick={stop}>Stop sequence</button>
+);
+
+export {
+	PlayButton,
+	StopButton
+};
