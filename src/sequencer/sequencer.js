@@ -20,23 +20,36 @@ const getNote = (state) => {
 const playNote = () => {
 	const state = getState();
 	const port = state.port;
+	const rndDur = Math.floor(getRndInRange(state.durationRange));
+	const rndVel = Math.floor(getRndInRange(state.velocityRange))/1000;
+	const rndChance = Math.floor(Math.random() * 100) + 1;
+
+	setBpm(state.bpm,state.bpb, state.ticks);
+
 	const noteDynamic = {
-		duration: getRndInRange(state.durationRange),
-		velocity: getRndInRange(state.behaviour.velocityRange),
+		duration: rndDur,
+		velocity: rndVel,
 		release:1
 	}
 
-	port.playNote(
-		getNote(state),
-		1, 
-		noteDynamic
-	);
+	console.log(rndChance, state.key)
+
+	if(rndChance < state.chance){
+		port.playNote(
+			getNote(state),
+			1, 
+			noteDynamic
+		);
+	}
 
 	transport.currentStepIdx = state.loop(transport.currentStepIdx, state.arp.length);
 }
 
 const getRndInRange = (range) => {
 	const diff = range[1]-range[0];
+
+	if(diff===0) return range[0];
+
 	const maxResolution = Math.max(1000, diff);
 	const multiplier = Math.floor(maxResolution / Math.ceil(diff));
 	const rndScaled = Math.floor(Math.random() * (diff * multiplier));
@@ -45,22 +58,28 @@ const getRndInRange = (range) => {
 	return Number(rndNum.toFixed(1));
 }
 
+const setBpm = (bpm, bpb, ticks) => {
+	transport.timing = getTiming(bpm, bpb, ticks);
+}
+
+const startInterval = () => {
+	transport.timer = setTimeout(() => {
+		playNote();
+		startInterval();
+	}, transport.timing);
+}
+
 const startSequence = () => {
 	const state = getState();
-	const bpm = state.behaviour.bpm;
-	const ticks = state.behaviour.ticks;
-	const bpb = state.behaviour.bpb;
 
-	transport.timing = getTiming(bpm, bpb, ticks);
-	transport.timer = setInterval(() => {
-		playNote();
-	}, transport.timing);
-
+	setBpm(state.bpm,state.bpb, state.ticks);
+	startInterval(transport);
+	
 	return true;
 }
 
 const stopSequence = () => {
-	clearInterval(transport.timer);
+	clearTimeout(transport.timer);
 	transport.timer = null;
 }
 

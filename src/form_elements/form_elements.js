@@ -30,15 +30,17 @@ const SelectFromArray = (props) => {
 const SelectFromObject = (props) => {
 	const defaultOption = defaults[props.id];
 
+
 	return (
 	 <select id={props.id} defaultValue={defaultOption} className={props.className}>
 	 	<option value=''>{props.prompt}</option>
 	 	{
 			Object.keys(props.items).map( key => {
+				const text = props.nameProp ? props.items[key][props.nameProp] : props.items[key];
 				return <Option 
 					val={key} 
 					key={key} 
-					text={props.items[key][props.nameProp]} 
+					text={text} 
 				/>;
 			})	
 		}
@@ -53,13 +55,10 @@ class SliderFromObject extends React.Component {
 			value: this.props.item.default
 		};
   }
-
   handleChange (e) {
-  	console.log(e)
     this.setState({ value: e.target.value });
   }
   render () {
-  	console.log(this.props)
   	const props = this.props;
     return (
 			<div className={props.className}>

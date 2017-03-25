@@ -16,14 +16,15 @@ describe("Randomise a value in any range", function() {
   		[2, 67],
   		[300, 1400],
   		[1500, 400],
+      [400, 400],
   		[100, 10]
   	]
 
   	ranges.forEach((range) => {
 
 		  it(`should return a value between ${range[0]} and ${range[1]}`, function() {
-		    expect(sequencer.getRndInRange(range)).toBeLessThan(Math.max(range[0],range[1]));
-		    expect(sequencer.getRndInRange(range)).toBeGreaterThan(Math.min(range[0],range[1]));
+		    expect(sequencer.getRndInRange(range)).not.toBeGreaterThan(Math.max(range[0],range[1]));
+		    expect(sequencer.getRndInRange(range)).not.toBeLessThan(Math.min(range[0],range[1]));
 		  });
   	});
 
