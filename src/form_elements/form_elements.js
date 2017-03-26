@@ -60,6 +60,7 @@ class SliderFromObject extends React.Component {
   }
   render () {
   	const props = this.props;
+  	console.log(props)
     return (
 			<div className={props.className}>
 				<label>
@@ -79,6 +80,23 @@ class SliderFromObject extends React.Component {
     );
   }
 }
+
+const universalDefaultProps = {
+ a:''
+}
+
+const universalPropTypes = {
+ a:React.PropTypes.String
+}
+
+SliderFromObject.proptypes = universalPropTypes
+SelectFromArray.proptypes = universalPropTypes
+SliderFromObject.proptypes = universalPropTypes
+
+
+SliderFromObject.defaultProps = universalDefaultProps
+SelectFromArray.defaultProps = universalDefaultProps
+SliderFromObject.defaultProps = universalDefaultProps
 
 export {
 	SelectFromObject,

@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import { SelectFromArray, SelectFromObject, SliderFromObject } from "./form_elements/form_elements"
 import { PlayButton, StopButton } from "./button/button"
 import midi from "./midi/midi"
+import Gadget from "./gadget/gadget"
 import scales from './_config/scales'
 import arps from './_config/arps'
 import loopTypes from './_config/loop_types'
@@ -12,38 +14,22 @@ import velocity from './_config/velocity_range'
 
 import css from './main.css'
 
-const Gadget = (props) => (
-		<div className="gadget">+
-		{[...Array(props.num)].map((x, i) =>
-	    <div className="led" key={i}></div>
-	  )}
-		</div>
-);
-
-class Wrapper extends React.Component {
+class Main extends React.Component {
   constructor(props) {
   	super(props);
     this.state = {
-			gadgets: {}
+			foo: 'bar'
 		};
+		this.state.update = this.updateState.bind(this);
   }
+
+  updateState(obj){
+  	this.setState(obj);
+  }
+
   render () {
-  	const props = this.props;
-    return (
-			<div className="bg">
-				{props.children}
-			</div>
-    );
-  }
-}
-
-
-midi
-.initialize()
-.then((midiStream) => {
-	ReactDOM.render(
-		<Wrapper>
-		 	<SelectFromArray className="block" items={midiStream.outputs} id="ports" valProp="id" nameProp="name" prompt="Midi port..." />
+  	return (<div className="bg">
+		 	<SelectFromArray className="block" items={this.props.midiStream.outputs} id="ports" valProp="id" nameProp="name" prompt="Midi port..." />
 		 	<SelectFromObject className="block" items={scales} id="scales" nameProp="name" prompt="Scale..." />
 		 	<SelectFromObject className="block" items={settings.key} id="key" prompt="Key..." />
 		 	<SelectFromObject className="block" items={arps} id="arps" nameProp="name" prompt="Arp type..." />
@@ -68,10 +54,16 @@ midi
 			 	<StopButton className="block" />
 		 	</div>
 		 	<div className="spread">
-			 	<Gadget num={8} />
+		 		{this.state.foo}
+			 	<Gadget num={8} state={this.state} />
 		 	</div>
-		</Wrapper>,
-	  document.getElementById('dom')
-	);
+		</div>)
+  }
+}
+
+midi
+.initialize()
+.then((midiStream) => {
+	ReactDOM.render(<Main midiStream={midiStream} />, document.getElementById('dom'));
 });
 
