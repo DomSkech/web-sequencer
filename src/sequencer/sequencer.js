@@ -1,10 +1,17 @@
 import midi from "../midi/midi"
 import getState from '../_state/state'
 
-const transport = {
-	timing: 0,
-	currentStepIdx: 0,
-	timer: null
+let transport = {};
+
+const initTransport = () => {
+	transport = {
+		timing: 0,
+		currentStepIdx: 0,
+		currentTickIdx:0,
+		currentLoopIdx: 0,
+		timer: null
+	}
+	return transport;
 }
 
 const getTiming = (bpm, bpb, ticks) => {
@@ -17,8 +24,8 @@ const getNote = (state) => {
 	return state.scale[noteIdx] + state.key;
 }
 
-const playNote = () => {
-	const state = getState();
+const playNote = (state) => {
+
 	const port = state.port;
 	const rndDur = Math.floor(getRndInRange(state.durationRange));
 	const rndVel = Math.floor(getRndInRange(state.velocityRange))/1000;
@@ -32,8 +39,6 @@ const playNote = () => {
 		release:1
 	}
 
-	console.log(rndChance, state.key)
-
 	if(rndChance < state.chance){
 		port.playNote(
 			getNote(state),
@@ -41,8 +46,17 @@ const playNote = () => {
 			noteDynamic
 		);
 	}
+}
 
-	transport.currentStepIdx = state.loop(transport.currentStepIdx, state.arp.length);
+const toogleFreezeLoop = (i) => {
+	if(i === transport.currentLoopIdx){
+		transport.freeze=false;
+	}else{
+		transport.currentLoopIdx=i;
+		transport.freeze=true;
+	}
+
+	return transport.freeze;
 }
 
 const getRndInRange = (range) => {
@@ -62,25 +76,46 @@ const setBpm = (bpm, bpb, ticks) => {
 	transport.timing = getTiming(bpm, bpb, ticks);
 }
 
-const startInterval = () => {
+const getNextIdx = (loopsLength, currentIdx) => {
+	if ( currentIdx < (loopsLength - 1) ){
+		return currentIdx += 1; 
+	} else {
+		return 0;
+	}
+}
+
+const updateUI = (loopIdx, tickIdx, liveState) => {
+	liveState.update({
+		currentTickCoord: [loopIdx,tickIdx]
+	})
+}
+
+const startTimeout = (transport, liveState) => {
+	const state = liveState.loops[transport.currentLoopIdx ];
+
+	setBpm(state.bpm, state.bpb, state.ticks);
+
 	transport.timer = setTimeout(() => {
-		playNote();
-		startInterval();
+		playNote(state);
+		updateUI(transport.currentLoopIdx, transport.currentTickIdx, liveState);
+
+		transport.currentStepIdx = state.loop(transport.currentStepIdx, state.arp.length);
+		transport.currentTickIdx = getNextIdx(state.ticks, transport.currentTickIdx);
+		transport.currentLoopIdx = transport.currentTickIdx === 0 && !transport.freeze ? getNextIdx(liveState.loops.length, transport.currentLoopIdx) : transport.currentLoopIdx;
+
+		startTimeout(transport, liveState);
 	}, transport.timing);
 }
 
-const startSequence = () => {
-	const state = getState();
-
-	setBpm(state.bpm,state.bpb, state.ticks);
-	startInterval(transport);
+const startSequence = (liveState) => {
+	startTimeout(transport, liveState);
 	
 	return true;
 }
 
 const stopSequence = () => {
 	clearTimeout(transport.timer);
-	transport.timer = null;
+	initTransport();
 }
 
-export default { startSequence, stopSequence, getTiming, getRndInRange }
+export default { startSequence, stopSequence, getTiming, getRndInRange, toogleFreezeLoop }

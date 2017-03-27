@@ -1,3 +1,10 @@
+body{
+		background:#ddd;
+}
+body *{
+	box-sizing: border-box;
+}
+
 #dom{
 	position:absolute;
 	width:100%;
@@ -5,9 +12,21 @@
 	font-family: Arial, Helvetica;
 	padding-left:5px;
 }
-
+fieldset{
+	border:1px solid #aaa;
+	padding:5px;
+	margin-right:5px;
+	clear:both;
+	font-size:12px;
+	text-transform:uppercase;
+	margin-top:10px;
+	width:100%;
+	display:flex;
+}
+legend{
+	color:#aaa;
+}
 .bg{
-	background:#eee;
 	width:100%;
 	height:100%;
 	position:relative;
@@ -16,7 +35,7 @@
 	align-content: flex-start;
 	flex-wrap: wrap;
 }
-.block,.gadget{
+.block,.gadget,.add-sequence{
 	padding: 5px;
 	border:none;
 	background: #ccc;
@@ -28,13 +47,32 @@
 	font-size:12px;
 	line-height:12px;
 }
+.gadget.on{
+	background:#fff;
+}
+.gadgets{
+	flex-grow:1;
+	display:flex;
+	flex-wrap: wrap;
+}
+.add-sequence,
 .gadget{
 	flex-grow:0;
 	text-align:center;
 	position:relative;
+	overflow:hidden;
+}
+.gadget span {
+  display: block;
+  float: left;
+  line-height: 10px;
+  padding: 0 4px;
 }
 .wrapper{
 	padding:0;
+}
+.leds{
+	float:left;
 }
 .led{
 	border-radius: 50%;
@@ -43,6 +81,9 @@
 	margin: 2px 2px 2px 0;
 	float:left;
 	background: #444;
+}
+.led.on{
+	background: #fff;
 }
 input[type=range]{
 	float:right;

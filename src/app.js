@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { SelectFromArray, SelectFromObject, SliderFromObject } from "./form_elements/form_elements"
 import { PlayButton, StopButton } from "./button/button"
 import midi from "./midi/midi"
-import Gadget from "./gadget/gadget"
+import {LoopSequences, Add} from "./gadget/gadget"
 import scales from './_config/scales'
 import arps from './_config/arps'
 import loopTypes from './_config/loop_types'
@@ -18,8 +18,9 @@ class Main extends React.Component {
   constructor(props) {
   	super(props);
     this.state = {
-			foo: 'bar'
-		};
+    	loops:[],
+    	currentTickCoord:[]
+    };
 		this.state.update = this.updateState.bind(this);
   }
 
@@ -50,13 +51,13 @@ class Main extends React.Component {
 			 	<SliderFromObject className="block wrapper" item={velocity.higher} id="max-velocity" nameProp="name" prompt="Max velocity" />
 		 	</div>
 		 	<div className="spread">
-			 	<PlayButton className="block" />
-			 	<StopButton className="block" />
+			 	<PlayButton className="block" state={this.state}/>
+			 	<StopButton className="block" state={this.state} />
 		 	</div>
-		 	<div className="spread">
-		 		{this.state.foo}
-			 	<Gadget num={8} state={this.state} />
-		 	</div>
+		 	<fieldset>
+		 		<legend>Sequence</legend>
+				<LoopSequences num={8} state={this.state} />		 			
+		 	</fieldset>
 		</div>)
   }
 }

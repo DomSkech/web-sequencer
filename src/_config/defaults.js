@@ -3,5 +3,6 @@ export default {
 	"scales" : "major",
 	"loop-types" : "up",
 	"ports" : "2",
-	"time" : "8/4"
+	"time" : "8/4",
+	"key": "60"
 }
