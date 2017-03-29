@@ -9,17 +9,20 @@ const Option = (props) => {
 }
 
 const SelectFromArray = (props) => {
-	const defaultOption = defaults[props.id];
+	
+	const handleChange = (e) => {
+    	props.update(e.target.value);
+	}
 
 	return (
-	 <select id={props.id} defaultValue={defaultOption} className={props.className}>
+	 <select id={props.id} value={props.value} className={props.className} onChange={handleChange}>
 	 	<option value=''>{props.prompt}</option>
 	 	{
 			[...props.items].map((item, i) => {
 				return <Option 
 					val={item[props.valProp]} 
 					key={i} 
-					text={item[props.nameProp]} 
+					text={item[props.nameProp]}
 				/>
 			})
 		}
@@ -28,11 +31,13 @@ const SelectFromArray = (props) => {
 };
 
 const SelectFromObject = (props) => {
-	const defaultOption = defaults[props.id];
-
+	
+	const handleChange = (e) => {
+    	props.update(e.target.value);
+	}
 
 	return (
-	 <select id={props.id} defaultValue={defaultOption} className={props.className}>
+	 <select id={props.id} value={props.value} className={props.className} onChange={handleChange}>
 	 	<option value=''>{props.prompt}</option>
 	 	{
 			Object.keys(props.items).map( key => {
@@ -51,34 +56,37 @@ const SelectFromObject = (props) => {
 class SliderFromObject extends React.Component {
   constructor(props) {
   	super(props);
-    this.state = {
-			value: this.props.item.default
-		};
   }
   handleChange (e) {
-    this.setState({ value: e.target.value });
+    if(this.props.update){
+    	this.props.update(Number(e.target.value));
+    }
   }
   render () {
   	const props = this.props;
     return (
 			<div className={props.className}>
 				<label>
-					{props.prompt} [{this.state.value}]
+					{props.prompt} [{this.props.value}]
 				</label>
 				<input 
 					type="range" 
 					id={props.id} 
-					defaultValue={props.item.default}
 					name={props.item.name}
 					max={props.item.max}
 					min={props.item.min}
 					step={props.item.steps}
+					value={this.props.value}
 					onChange={(e) => this.handleChange(e)}
 				/>
 			</div>
     );
   }
 }
+
+SliderFromObject.propTypes = {
+  value: React.PropTypes.number
+};
 
 export {
 	SelectFromObject,

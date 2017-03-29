@@ -3,22 +3,21 @@ import ReactDOM from 'react-dom';
 import sequencer from '../sequencer/sequencer'
 
 const play = (props) => {
-	sequencer.startSequence(props.state);
+	sequencer.startSequence(props.superState);
 }
 
 const stop = (props) => {
 	sequencer.stopSequence();
-	props.state.update({
+	props.superState.update({
 		frozenLoopIdx:false
 	});
-	return true;
 }
 
 const PlayButton = (props) => {
 	return (
 		<button className={props.className} id="playButton" 
 			onClick={() => {
-				if(props.state.loops.length){
+				if(props.superState.bars.length){
 					play(props);
 				}else{
 					console.log('No sequence has been added');

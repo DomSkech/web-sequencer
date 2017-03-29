@@ -1,6 +1,19 @@
 import React from 'react';
-import getState from '../_state/state'
 import sequencer from '../sequencer/sequencer'
+import getLoopMap from '../_state/getLoopMap'
+
+const freezeBar = (state, barNum) => {
+	state.update({
+			frozenLoopIdx: sequencer.toogleFreezeLoop(barNum) ? barNum : false
+	});
+}
+
+const deleteBar = (state, barNum) => {
+	state.update({
+		bars:state.bars.filter((_, x) => x !== barNum)
+	});
+	sequencer.stopSequence();
+}
 
 const Leds = (props) => (
 	<div className="leds">
@@ -14,24 +27,24 @@ const Leds = (props) => (
 )
 
 const Gadget = (props) => {
-	const i = props.i;
-	const isCurrentLoop = i === props.state.currentTickCoord[0];
-	const currentTick = isCurrentLoop ? props.state.currentTickCoord[1] : false;
+	const superState = props.superState;
+	const i = props.barNum;
+
+	const isCurrentLoop = superState.currentTickCoord[0] === i;
+	const isFrozenLoop = superState.frozenLoopIdx === i;
+	const currentTick = isCurrentLoop ? superState.currentTickCoord[1] : false;
 
 	return (
-		<div className={props.state.frozenLoopIdx === i ? 'gadget on' : 'gadget'} key={i} 
-			onClick={(e) => {
-				props.state.update({
-					frozenLoopIdx: sequencer.toogleFreezeLoop(i) ? i : false
-				});
-			}}
+		<div 
+			className={isFrozenLoop ? 'gadget on' : 'gadget'} 
+			key={i} 
+			onClick={(e) => { freezeBar(superState, i); }}
 		>
-			<Leds num={props.loop.ticks} currentTickIdx={currentTick}/>
+			<Leds num={props.bar.ticks} currentTickIdx={currentTick}/>
 			<span onClick={(e) => {
 				e.preventDefault();
-				props.state.update({loops:props.state.loops.filter((_, x) => x !== i)})
-				sequencer.stopSequence();
-			}}>-</span>
+				deleteBar(superState, i);
+			}}> - </span>
 		</div>
 	)
 }
@@ -39,9 +52,9 @@ const Gadget = (props) => {
 const LoopSequences = (props) => {
 	return (
 		<div className="gadgets">
-			{[...props.state.loops].map((loop, i) => {
-
-				return (<Gadget {...props} key={i} i={i} loop={loop} />)
+			{[...props.superState.bars].map((bar, i) => {
+				bar = getLoopMap(bar);
+				return (<Gadget {...props} key={i} barNum={i} bar={bar} />)
 			})}
 			<Add {...props} />
 		</div>
@@ -50,15 +63,15 @@ const LoopSequences = (props) => {
 
 const Add = (props) => (
 	<div className="add-sequence" onClick={() => {
-		const state = getState();
+		const newState = {...props.superState.bars[props.superState.currentTickCoord[0]]};
 		sequencer.stopSequence();
-		props.state.update({loops:[...props.state.loops, state]})
+		props.superState.update({bars:[...props.superState.bars, newState]})
 	}}>+
 	</div>
 );
 
 LoopSequences.PropTypes = {
-	state:React.PropTypes.shape({
+	superState:React.PropTypes.shape({
 		loops: []
 	})
 }

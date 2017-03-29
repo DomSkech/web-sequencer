@@ -4,5 +4,5 @@ export default {
 	"loop-types" : "up",
 	"ports" : "2",
 	"time" : "8/4",
-	"key": "60"
+	"key": "61"
 }

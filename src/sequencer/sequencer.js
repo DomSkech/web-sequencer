@@ -1,5 +1,4 @@
-import midi from "../midi/midi"
-import getState from '../_state/state'
+import getLoopMap from '../_state/getLoopMap'
 
 let transport = {};
 
@@ -8,30 +7,32 @@ const initTransport = () => {
 		timing: 0,
 		currentStepIdx: 0,
 		currentTickIdx:0,
-		currentLoopIdx: 0,
+		currentBarIdx: 0,
 		timer: null
 	}
 	return transport;
 }
+
+initTransport();
 
 const getTiming = (bpm, bpb, ticks) => {
 	const timing = (60 * 1000) / (bpm * (ticks / bpb));
 	return timing;
 }
 
-const getNote = (state) => {
-	const noteIdx = state.arp[transport.currentStepIdx];
-	return state.scale[noteIdx] + state.key;
+const getNote = (mappedState) => {
+	const noteIdx = mappedState.arp[transport.currentStepIdx];
+	return mappedState.scale[noteIdx] + mappedState.key;
 }
 
-const playNote = (state) => {
+const playNote = (mappedState) => {
 
-	const port = state.port;
-	const rndDur = Math.floor(getRndInRange(state.durationRange));
-	const rndVel = Math.floor(getRndInRange(state.velocityRange))/1000;
+	const port = mappedState.port;
+	const rndDur = Math.floor(getRndInRange(mappedState.durationRange));
+	const rndVel = Math.floor(getRndInRange(mappedState.velocityRange))/1000;
 	const rndChance = Math.floor(Math.random() * 100) + 1;
 
-	setBpm(state.bpm,state.bpb, state.ticks);
+	setBpm(mappedState.bpm,mappedState.bpb, mappedState.ticks);
 
 	const noteDynamic = {
 		duration: rndDur,
@@ -39,9 +40,9 @@ const playNote = (state) => {
 		release:1
 	}
 
-	if(rndChance < state.chance){
+	if(rndChance < mappedState.chance){
 		port.playNote(
-			getNote(state),
+			getNote(mappedState),
 			1, 
 			noteDynamic
 		);
@@ -49,10 +50,10 @@ const playNote = (state) => {
 }
 
 const toogleFreezeLoop = (i) => {
-	if(i === transport.currentLoopIdx){
+	if(i === transport.currentBarIdx){
 		transport.freeze=false;
 	}else{
-		transport.currentLoopIdx=i;
+		transport.currentBarIdx=i;
 		transport.freeze=true;
 	}
 
@@ -76,45 +77,51 @@ const setBpm = (bpm, bpb, ticks) => {
 	transport.timing = getTiming(bpm, bpb, ticks);
 }
 
-const getNextIdx = (loopsLength, currentIdx) => {
-	if ( currentIdx < (loopsLength - 1) ){
+const getNextIdx = (length, currentIdx) => {
+	if ( currentIdx < (length - 1) ){
 		return currentIdx += 1; 
 	} else {
 		return 0;
 	}
 }
 
-const updateUI = (loopIdx, tickIdx, liveState) => {
-	liveState.update({
-		currentTickCoord: [loopIdx,tickIdx]
+const updateUI = (barIdx, tickIdx, superState) => {
+	superState.update({
+		currentTickCoord: [barIdx,tickIdx]
 	})
 }
 
-const startTimeout = (transport, liveState) => {
-	const state = liveState.loops[transport.currentLoopIdx ];
+const executeBeat = (transport, superState, mappedState) => {
+	playNote(mappedState);
+	updateUI(transport.currentBarIdx, transport.currentTickIdx, superState);
 
-	setBpm(state.bpm, state.bpb, state.ticks);
+	transport.currentStepIdx = mappedState.loopType(transport.currentStepIdx, mappedState.arp.length);
+	transport.currentTickIdx = getNextIdx(mappedState.ticks, transport.currentTickIdx);
+	if (transport.currentTickIdx === 0 && !transport.freeze) {
+		transport.currentBarIdx = getNextIdx(superState.bars.length, transport.currentBarIdx);
+	}
+	
+	startTimeout(transport, superState);
+}
+
+const startTimeout = (transport, superState) => {
+	const mappedState = getLoopMap(superState.bars[transport.currentBarIdx]);
+
+	setBpm(mappedState.bpm, mappedState.bpb, mappedState.ticks);
 
 	transport.timer = setTimeout(() => {
-		playNote(state);
-		updateUI(transport.currentLoopIdx, transport.currentTickIdx, liveState);
-
-		transport.currentStepIdx = state.loop(transport.currentStepIdx, state.arp.length);
-		transport.currentTickIdx = getNextIdx(state.ticks, transport.currentTickIdx);
-		transport.currentLoopIdx = transport.currentTickIdx === 0 && !transport.freeze ? getNextIdx(liveState.loops.length, transport.currentLoopIdx) : transport.currentLoopIdx;
-
-		startTimeout(transport, liveState);
+		executeBeat(transport, superState, mappedState);
 	}, transport.timing);
 }
 
-const startSequence = (liveState) => {
-	startTimeout(transport, liveState);
-	
+const startSequence = (superState) => {
+	startTimeout(transport, superState);
 	return true;
 }
 
 const stopSequence = () => {
 	clearTimeout(transport.timer);
+	transport.timer = null;
 	initTransport();
 }
 
