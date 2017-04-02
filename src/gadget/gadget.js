@@ -19,10 +19,11 @@ const muteNote = (state, barNum, i) => {
 }
 
 const deleteBar = (state, barNum) => {
+	sequencer.stopSequence();
 	state.update({
 		bars:state.bars.filter((_, x) => x !== barNum)
 	});
-	sequencer.stopSequence();
+	sequencer.startSequence(state);
 }
 
 const Leds = (props) => (
@@ -74,9 +75,10 @@ const LoopSequences = (props) => {
 
 const Add = (props) => (
 	<div className="add-sequence" onClick={() => {
-		const newState = {...props.superState.bars[props.superState.currentTickCoord[0]]};
 		sequencer.stopSequence();
-		props.superState.update({bars:[...props.superState.bars, newState]})
+		const newState = {...props.superState.bars[props.superState.currentTickCoord[0]]};
+		props.superState.update({bars:[...props.superState.bars, newState]});
+		sequencer.startSequence(props.superState);
 	}}>+
 	</div>
 );

@@ -8,6 +8,8 @@ const initTransport = () => {
 		currentStepIdx: 0,
 		currentTickIdx:0,
 		currentBarIdx: 0,
+		ticksSinceBpmChange:0,
+		currentBpm:null,
 		timer: null
 	}
 	return transport;
@@ -27,6 +29,7 @@ const getNote = (mappedState) => {
 
 const playNote = (mappedState, superState) => {
 	const isMuted = mappedState.muted[transport.currentTickIdx];
+
 	if(isMuted) return;
 
 	const port = mappedState.port;
@@ -34,8 +37,7 @@ const playNote = (mappedState, superState) => {
 	const rndVel = Math.floor(getRndInRange(mappedState.velocityRange))/1000;
 	const rndChance = Math.floor(Math.random() * 100) + 1;
 
-	// setBpm(mappedState.bpm,mappedState.bpb, mappedState.ticks);
-	setBpm(superState.masterClock, mappedState.bpb, mappedState.ticks);
+	setBpm(mappedState, superState);
 
 	const noteDynamic = {
 		duration: rndDur,
@@ -76,8 +78,17 @@ const getRndInRange = (range) => {
 	return Number(rndNum.toFixed(1));
 }
 
-const setBpm = (bpm, bpb, ticks) => {
-	transport.timing = getTiming(bpm, bpb, ticks);
+const setBpm = ({bpm, bpb, ticks}, superState) => {
+
+	const usedBpm = superState.retrieve('useMasterClock') ? superState.retrieve('masterClock') : bpm;
+	const newTiming = getTiming(usedBpm, bpb, ticks);
+
+	if(newTiming !== transport.timing){
+		transport.timing = newTiming;
+		transport.ticksSinceBpmChange = 0;
+		resetMillis();
+	}
+	transport.currentBpm = bpm;
 }
 
 const getNextIdx = (length, currentIdx) => {
@@ -95,43 +106,37 @@ const updateUI = (barIdx, tickIdx, superState) => {
 }
 
 const resetMillis = () => {
-	transport.millis = new Date().getTime();
+	transport.millis = performance.now();
 }
 
 const executeBeat = (transport, superState, mappedState) => {
-	// transport.currentTickIdx = superState.currentTickCoord[1];
-	// transport.currentBarIdx = superState.currentTickCoord[0];
-// console.log([...superState.currentTickCoord])
+	const newTime = performance.now();
+	const scheduledTimes = (newTime - transport.millis)/transport.ticksSinceBpmChange
 
-const newTime = new Date().getTime();
+	if(transport.timing <= scheduledTimes){
+		playNote(mappedState, superState);
+		updateUI(transport.currentBarIdx, transport.currentTickIdx, superState);
 
-if(transport.timing <= (newTime - transport.millis)){
-	playNote(mappedState, superState);
-	updateUI(transport.currentBarIdx, transport.currentTickIdx, superState);
+		transport.currentStepIdx = mappedState.loopType(transport.currentStepIdx, mappedState.arp.length);
+		transport.currentTickIdx = getNextIdx(mappedState.ticks, transport.currentTickIdx);
+		transport.ticksSinceBpmChange += 1;
 
-	transport.currentStepIdx = mappedState.loopType(transport.currentStepIdx, mappedState.arp.length);
-	transport.currentTickIdx = getNextIdx(mappedState.ticks, transport.currentTickIdx);
-	if (transport.currentTickIdx === 0 && !transport.freeze) {
-		transport.currentBarIdx = getNextIdx(superState.bars.length, transport.currentBarIdx);
+		if (transport.currentTickIdx === 0 && !transport.freeze) {
+			transport.currentBarIdx = getNextIdx(superState.retrieve('bars').length, transport.currentBarIdx);
+		}
 	}
-	resetMillis();
-}
-
-
-	// startTimeout(transport, superState);
+	startTimeout(transport, superState);
 }
 
 const startTimeout = (transport, superState) => {
-	const mappedState = getLoopMap(superState.bars[transport.currentBarIdx]);
-	// setBpm(mappedState.bpm, mappedState.bpb, mappedState.ticks);
-	setBpm(superState.masterClock, mappedState.bpb, mappedState.ticks);
-
-	transport.timer = setInterval(() => {
+	const mappedState = getLoopMap(superState.retrieve('bars')[transport.currentBarIdx]);
+	transport.timer = setTimeout(() => {
 		executeBeat(transport, superState, mappedState);
-	}, 10);
+	}, 1);
 }
 
-const startSequence = (superState) => {
+const startSequence = (superState) => {	
+	stopSequence();
 	resetMillis();
 	startTimeout(transport, superState);
 	return true;

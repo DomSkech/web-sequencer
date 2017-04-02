@@ -5,7 +5,7 @@ let ports = null;
 let oldInputPort = null;
 let lastTimestamps = [];
 let lastTimestamp = null;
-const clockAverageOver = 24;
+const clockAverageOver = 96;
 
 
 const getPorts = (id) => {
@@ -20,7 +20,7 @@ const getAverageTimeBetweenClocks = (clockTimeArray) => {
 }
 
 const getBPMFromClockInterval = (interval) => {
-	return ((1000*60)/(interval*24)).toFixed(2);
+	return Number(((1000*60)/(interval*24)).toFixed(1));
 }
 
 const monitorClock = (clockEvent) => {
@@ -38,13 +38,19 @@ const monitorClock = (clockEvent) => {
   	return cumulative ? getBPMFromClockInterval(cumulative) : null;
 }
 
-const monitorInput = (portNum, cb) => {
+const monitorInput = (portNum, cb, superState) => {
+	const input = webMidi.inputs[portNum];
+	const tolerance = 0.3;
 	if(oldInputPort){
 		oldInputPort.removeListener('clock', "all");
 	}
-	const input = webMidi.inputs[portNum];
+	
 	input.addListener('clock', "all", (e) => {
-		cb(monitorClock(e));
+		const accurateBpm = monitorClock(e) || 0;
+		const masterBpm = superState.retrieve('masterClock');
+		if(Math.abs(masterBpm - accurateBpm) > tolerance){
+			cb(accurateBpm);
+		}
 	});
 	oldInputPort = input;
 }

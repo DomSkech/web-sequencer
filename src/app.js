@@ -31,15 +31,22 @@ class Main extends React.Component {
 			}],
 			input: 2,
 			masterClock:120,
+			useMasterClock: false,
     	currentTickCoord:[0,0]
     };
 		this.state.update = this.updateState.bind(this);
+		this.state.retrieve = this.retrieveState.bind(this);
 		this.updateMasterClock =	this.updateMasterClock.bind(this);
+		this.freezeTempo =	this.freezeTempo.bind(this);
 		this.updateStateProperty = this.updateStateProperty.bind(this);
   }
 
   updateState(obj){
   	this.setState(obj);
+  }
+
+  retrieveState(property){
+  	return this.state[property];
   }
 
   updateStateProperty(prop, val){
@@ -55,9 +62,20 @@ class Main extends React.Component {
   	});
   }
 
+  freezeTempo(){
+  	this.setState({
+  		useMasterClock: !this.state.useMasterClock
+  	});
+  }
+
   render () {
   	const currentLoopIdx = this.state.currentTickCoord[0];
-  	const currentLoop = this.state.bars[currentLoopIdx];
+  	const currentLoop = this.state.bars[currentLoopIdx] || this.state.bars[0];
+  	const tempoClassName = this.state.useMasterClock ? 'master on' : 'master';
+
+  	if(!currentLoop){
+  		return false;
+  	}
 
   	return (<div className="bg">
  			<div className="header">
@@ -74,18 +92,12 @@ class Main extends React.Component {
 			 				this.setState({
 			 					'input': val
 			 				});
-			 				midi.monitorInput(val, this.updateMasterClock);
+			 				midi.monitorInput(val, this.updateMasterClock, this.state);
 			 			}}
 			 			value={this.state.input}
 				 	/>
-				 	<div className="block">
-				 		<button onClick={() => {
-				 			this.setState({
-				 				currentTickCoord:[0,0]
-				 			});
-				 		}}>RESTART</button>
-				 	</div>
-				 	<div className="block">
+				 	<div className={`block ${tempoClassName}`}>
+				 		<div className='locking' onClick={this.freezeTempo}><div>Lock</div></div>
 				 		{this.state.masterClock}
 				 	</div>
 			 	</div>
@@ -97,7 +109,6 @@ class Main extends React.Component {
 		 		
 			 	<SelectFromArray className="block" items={this.props.midiStream.outputs} id="ports" valProp="id" nameProp="name" prompt="Midi output..." 
 		 			update={val => {
-
 		 				this.updateStateProperty('port', val);
 		 			}}
 		 			value={currentLoop.port}
@@ -126,7 +137,7 @@ class Main extends React.Component {
 		 			}}
 		 			value={currentLoop.loop}
 			 	/>
-		 		<SliderFromObject className="block wrapper" item={settings.bpm} id="bpm" nameProp="name" prompt="Loop BPM" 
+		 		<SliderFromObject className={`block wrapper ${this.state.useMasterClock ? 'disabled' : ''}`} item={settings.bpm} id="bpm" nameProp="name" prompt="Loop BPM" 
 		 			update={val => {
 		 				this.updateStateProperty('bpm', val);
 		 			}}

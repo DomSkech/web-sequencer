@@ -36,11 +36,12 @@ h1{
 .locking div{
 	transform: rotate(90deg);
 	font-size:8px;
-	padding:1px;
+	padding:3px 0 0 2px;
 	color:#eee;
 	height:12px;
 	top:0;
 }
+.master.on .locking div,
 .gadget.on .locking div{
 	color:#ccc;
 }
@@ -76,7 +77,8 @@ legend{
 	flex-wrap: wrap;
 }
 .block,.gadget,.add-sequence{
-	padding: 5px;
+	height:24px;
+	padding:5px;
 	border:none;
 	background: #333;
 	margin: 5px 5px 0 0;
@@ -89,6 +91,13 @@ legend{
 	color:#ccc;
 	font-family:monospace;
 }
+select.block{
+	padding-top:3px;
+}
+.disabled{
+	opacity:0.2;
+}
+.master.on,
 .gadget.on{
 	background:#fff;
 }
@@ -137,7 +146,7 @@ input[type=range]{
 	margin-right:5px;
 }
 label{
-	padding:7px 5px 5px;
+	padding:5px 5px 5px;
 	float:left;
 	display:block;
 }
