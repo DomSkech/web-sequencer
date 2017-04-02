@@ -8,6 +8,16 @@ const freezeBar = (state, barNum) => {
 	});
 }
 
+const muteNote = (state, barNum, i) => {
+	const newState = {...state}
+	newState.bars[barNum].muted = newState.bars[barNum].muted || {};
+	newState.bars[barNum].muted[i] = !newState.bars[barNum].muted[i];
+
+	state.update({
+		bars:newState.bars
+	});
+}
+
 const deleteBar = (state, barNum) => {
 	state.update({
 		bars:state.bars.filter((_, x) => x !== barNum)
@@ -17,10 +27,11 @@ const deleteBar = (state, barNum) => {
 
 const Leds = (props) => (
 	<div className="leds">
-		{[...Array(props.num)].map((x, i) => 
+		{[...Array(props.bar.ticks)].map((x, i) => 
 			{
 				const tickClass = props.currentTickIdx === i ? `led on` : 'led';
-		    return <div className={tickClass} key={i}></div>
+				const mutedClass = (props.bar.muted && props.bar.muted[i]) ? ' muted' : '';
+		    return <div className={tickClass+mutedClass} key={i} onClick={(e) => { muteNote(props.superState, props.barNum, i); }}></div>
 	  	}
 	  )}
   </div>
@@ -37,10 +48,10 @@ const Gadget = (props) => {
 	return (
 		<div 
 			className={isFrozenLoop ? 'gadget on' : 'gadget'} 
-			key={i} 
-			onClick={(e) => { freezeBar(superState, i); }}
+			key={i}
 		>
-			<Leds num={props.bar.ticks} currentTickIdx={currentTick}/>
+			<div className="locking" onClick={(e) => { freezeBar(superState, i); }}><div>Lock</div></div>
+			<Leds {...props} currentTickIdx={currentTick}/>
 			<span onClick={(e) => {
 				e.preventDefault();
 				deleteBar(superState, i);

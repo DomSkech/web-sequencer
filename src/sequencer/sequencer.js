@@ -25,14 +25,17 @@ const getNote = (mappedState) => {
 	return mappedState.scale[noteIdx] + mappedState.key;
 }
 
-const playNote = (mappedState) => {
+const playNote = (mappedState, superState) => {
+	const isMuted = mappedState.muted[transport.currentTickIdx];
+	if(isMuted) return;
 
 	const port = mappedState.port;
 	const rndDur = Math.floor(getRndInRange(mappedState.durationRange));
 	const rndVel = Math.floor(getRndInRange(mappedState.velocityRange))/1000;
 	const rndChance = Math.floor(Math.random() * 100) + 1;
 
-	setBpm(mappedState.bpm,mappedState.bpb, mappedState.ticks);
+	// setBpm(mappedState.bpm,mappedState.bpb, mappedState.ticks);
+	setBpm(superState.masterClock, mappedState.bpb, mappedState.ticks);
 
 	const noteDynamic = {
 		duration: rndDur,
@@ -88,11 +91,22 @@ const getNextIdx = (length, currentIdx) => {
 const updateUI = (barIdx, tickIdx, superState) => {
 	superState.update({
 		currentTickCoord: [barIdx,tickIdx]
-	})
+	});
+}
+
+const resetMillis = () => {
+	transport.millis = new Date().getTime();
 }
 
 const executeBeat = (transport, superState, mappedState) => {
-	playNote(mappedState);
+	// transport.currentTickIdx = superState.currentTickCoord[1];
+	// transport.currentBarIdx = superState.currentTickCoord[0];
+// console.log([...superState.currentTickCoord])
+
+const newTime = new Date().getTime();
+
+if(transport.timing <= (newTime - transport.millis)){
+	playNote(mappedState, superState);
 	updateUI(transport.currentBarIdx, transport.currentTickIdx, superState);
 
 	transport.currentStepIdx = mappedState.loopType(transport.currentStepIdx, mappedState.arp.length);
@@ -100,21 +114,25 @@ const executeBeat = (transport, superState, mappedState) => {
 	if (transport.currentTickIdx === 0 && !transport.freeze) {
 		transport.currentBarIdx = getNextIdx(superState.bars.length, transport.currentBarIdx);
 	}
-	
-	startTimeout(transport, superState);
+	resetMillis();
+}
+
+
+	// startTimeout(transport, superState);
 }
 
 const startTimeout = (transport, superState) => {
 	const mappedState = getLoopMap(superState.bars[transport.currentBarIdx]);
+	// setBpm(mappedState.bpm, mappedState.bpb, mappedState.ticks);
+	setBpm(superState.masterClock, mappedState.bpb, mappedState.ticks);
 
-	setBpm(mappedState.bpm, mappedState.bpb, mappedState.ticks);
-
-	transport.timer = setTimeout(() => {
+	transport.timer = setInterval(() => {
 		executeBeat(transport, superState, mappedState);
-	}, transport.timing);
+	}, 10);
 }
 
 const startSequence = (superState) => {
+	resetMillis();
 	startTimeout(transport, superState);
 	return true;
 }
