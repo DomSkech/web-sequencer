@@ -33,6 +33,7 @@ const playNote = (mappedState, superState) => {
 	if(isMuted) return;
 
 	const port = mappedState.port;
+	const rndChannel = Math.floor(getRndInRange(mappedState.channelRange));
 	const rndDur = Math.floor(getRndInRange(mappedState.durationRange));
 	const rndVel = Math.floor(getRndInRange(mappedState.velocityRange))/1000;
 	const rndChance = Math.floor(Math.random() * 100) + 1;
@@ -48,7 +49,7 @@ const playNote = (mappedState, superState) => {
 	if(rndChance < mappedState.chance){
 		port.playNote(
 			getNote(mappedState),
-			1, 
+			rndChannel, 
 			noteDynamic
 		);
 	}

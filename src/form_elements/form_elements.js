@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
-import defaults from '../_config/defaults'
 
 const Option = (props) => {
 	return (
@@ -15,14 +14,19 @@ const SelectFromArray = (props) => {
 	}
 
 	return (
-	 <select id={props.id} value={props.value} className={props.className} onChange={handleChange}>
+	 <select 
+     id={props.id} 
+     value={props.value} 
+     className={props.className} 
+     onChange={handleChange}
+   >
 	 	<option value=''>{props.prompt}</option>
 	 	{
 			[...props.items].map((item, i) => {
 				return <Option 
-					val={item[props.valProp]} 
+					val={item[props.valProp] || item} 
 					key={i} 
-					text={item[props.nameProp]}
+					text={item[props.nameProp] || item}
 				/>
 			})
 		}

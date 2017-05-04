@@ -7,6 +7,7 @@ import midi from "./midi/midi"
 import {LoopSequences, Add} from "./gadget/gadget"
 import loopTypes from './_config/loop_types'
 import durationRange from './_config/note_length_range'
+import channelRange from './_config/channels_range'
 import settings from './_config/settings'
 import scales from './_config/scales'
 import arps from './_config/arps'
@@ -21,9 +22,13 @@ class Main extends React.Component {
 				scale:'major', 
 				arp:'normal',
 				loop:'up',
-				port: 2, 
-				durationRange: [50,100],
-				velocityRange: [60,80],
+				port: 'output-3',
+        channel: 1,
+        minChannel:1,
+        maxChannel:1,
+        channelRange: [1, 1],
+				durationRange: [50, 100],
+				velocityRange: [60, 80],
 				time: '8/4',
 				chance: 100,
 				bpm: 120,
@@ -51,7 +56,6 @@ class Main extends React.Component {
 
   updateStateProperty(prop, val){
 		const newState = {...this.state}
-
 		newState.bars[this.state.currentTickCoord[0]][prop] = val;
     this.setState(newState);
   }
@@ -87,7 +91,13 @@ class Main extends React.Component {
 		 		<legend>Master clock</legend>
 		 		<div className="spread">
 		 		
-				 	<SelectFromArray className="block" items={this.props.midiStream.inputs} id="inputs" valProp="id" nameProp="name" prompt="None" 
+				 	<SelectFromArray 
+          className="block" 
+          items={this.props.midiStream.inputs} 
+          id="inputs" 
+          valProp="id"
+          nameProp="name" 
+          prompt="None" 
 			 			update={val => {
 			 				this.setState({
 			 					'input': val
@@ -107,13 +117,24 @@ class Main extends React.Component {
 		 		<legend>Notes</legend>
 		 		<div className="spread">
 		 		
-			 	<SelectFromArray className="block" items={this.props.midiStream.outputs} id="ports" valProp="id" nameProp="name" prompt="Midi output..." 
+			 	<SelectFromArray 
+          className="block" 
+          items={this.props.midiStream.outputs} 
+          id="ports" 
+          valProp="id" 
+          nameProp="name" 
+          prompt="Midi output..."
 		 			update={val => {
 		 				this.updateStateProperty('port', val);
 		 			}}
 		 			value={currentLoop.port}
 			 	/>
-			 	<SelectFromObject className="block" items={scales} id="scales" nameProp="name" prompt="Scale..." 
+			 	<SelectFromObject 
+          className="block" 
+          items={scales} 
+          id="scales" 
+          nameProp="name" 
+          prompt="Scale..." 
 		 			update={val => {
 		 				this.updateStateProperty('scale', val);
 		 			}}
@@ -160,6 +181,20 @@ class Main extends React.Component {
 		 			}}
 		 			value={currentLoop.chance}
 		 		/>
+
+        <SliderFromObject className="block wrapper" item={channelRange.lower} id="min-channel" nameProp="name" prompt="Min channel" 
+          update={val => {
+            this.updateStateProperty('channelRange', [val, currentLoop.channelRange[1]]);
+          }}
+          value={currentLoop.channelRange[0]}
+        />
+
+        <SliderFromObject className="block wrapper" item={channelRange.higher} id="max-channel" nameProp="name" prompt="Max Channel" 
+          update={val => {
+            this.updateStateProperty('channelRange', [currentLoop.channelRange[0], val]);
+          }}
+          value={currentLoop.channelRange[1]}
+        />
 		 		<SliderFromObject className="block wrapper" item={durationRange.lower} id="min-duration" nameProp="name" prompt="Min duration" 
 		 			update={val => {
 		 				this.updateStateProperty('durationRange', [val, currentLoop.durationRange[1]]);

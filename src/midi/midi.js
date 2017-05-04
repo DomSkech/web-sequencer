@@ -9,7 +9,7 @@ const clockAverageOver = 96;
 
 
 const getPorts = (id) => {
-	return id ? ports[id] : ports;
+	return id ? webMidi.getOutputById(id) : ports;
 }
 
 const getAverageTimeBetweenClocks = (clockTimeArray) => {
@@ -38,8 +38,8 @@ const monitorClock = (clockEvent) => {
   	return cumulative ? getBPMFromClockInterval(cumulative) : null;
 }
 
-const monitorInput = (portNum, cb, superState) => {
-	const input = webMidi.inputs[portNum];
+const monitorInput = (portId, cb, superState) => {
+	const input = webMidi.getInputById(portId);
 	const tolerance = 0.3;
 	if(oldInputPort){
 		oldInputPort.removeListener('clock', "all");

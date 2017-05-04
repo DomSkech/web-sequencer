@@ -15,6 +15,8 @@ const getLoopMap = (bar) => {
 		arp:arp,
 		loopType:loopType,
 		port: port, 
+		channel: bar.channel,
+		channelRange: bar.channelRange,
 		durationRange: bar.durationRange,
 		velocityRange: bar.velocityRange,
 		bpb: Number(settings.time[bar.time].bpb),
